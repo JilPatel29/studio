@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% if not include %}
+        {{ block.super }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Modelling Studio</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom right, #dd97b5, #ac5594);
+            color: #333;
+        }
+
+        .logo {
+            font-size: 36px;
+            color: #181717;
+            font-family: 'Cursive', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        nav {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #0d0d0d;
+            font-size: 18px;
+        }
+
+        .main {
+            text-align: center;
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .main img {
+            width: 70%;
+            max-width: 700px;
+            border-radius: 15px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .about-us {
+            text-align: left;
+            width: 50%;
+            height: 50%;
+            padding: 20px;
+            color: #fff;
+            background-color: rgba(255, 111, 145, 0.8);
+            border-radius: 15px;
+        }
+
+        .about-us h2 {
+            font-size: 28px;
+        }
+
+        .about-us p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .welcome-banner {
+            font-size: 24px;
+            color: #fff;
+            background: #af455e;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .book-now {
+            padding: 15px 30px;
+            background: linear-gradient(to right, #ff6f91, #f8c6dc);
+            color:#af455e;
+            border: none;
+            border-radius: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .book-now:hover {
+            background: linear-gradient(to right, #dd689a, #de607d);
+        }
+
+        /* Sign Up Button */
+        .signup-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(to right, #ff6f91, #f8c6dc);
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+        }
+
+        .signup-button:hover {
+            background: linear-gradient(to right, #dd689a, #de607d);
+        }
+    </style>
+</head>
+
+<body>
+  
+    <a href="{% url 'signup' %}" class="signup-button">Sign Up</a>
+
+    <div class="main">
+        <img src="https://www.weddingsutra.com/images/bride/fashion/jewelry-series-gujarati-bride/gujrati-bride-intro.webp" alt="Couple in Photoshoot">
+
+        <!-- About Us Section -->
+        <div class="about-us">
+            <h2>About Us</h2>
+            <p>
+                Welcome to Love Modelling Studio, a premier destination for capturing life's most precious moments. 
+                Specializing in maternity, couple, and family photoshoots, our talented photographers bring out the beauty of every moment, 
+                ensuring that your memories are preserved forever.
+            </p>
+            <p>
+                Our studio offers personalized packages to suit your specific needs. Whether it's your wedding, baby bump, or a special family occasion, 
+                Love Modelling Studio ensures that you leave with the perfect keepsakes of your cherished moments.
+            </p>
+        </div>
+    </div>
+
+    <!-- Centered Welcome Banner and Book Now Button -->
+    <div class="center-content">
+        <div class="welcome-banner">
+            Welcome to the Love Modelling Studio. Book Our Services
+        </div>
+
+        <a href="{% url 'booking' %}">
+            <button class="book-now">Book Now</button>
+        </a>
+    </div>
+
+</body>
+</html>
+
+{% include 'services.html' with include=True %}
+{% include 'gallery.html' with include=True %}
+{% include 'contact.html' with include=True %}
+{% endblock %}

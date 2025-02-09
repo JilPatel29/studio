@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% if not include %}
+        {{ block.super }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Service</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #fdf1f1;
+            color: #333;
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+            background: #ff6f91;
+            color: #fff;
+        }
+
+        .logo {
+            font-size: 36px;
+            font-family: 'Cursive', sans-serif;
+        }
+
+        nav {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="email"], input[type="tel"], input[type="datetime-local"], select {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+        }
+
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .payment-option {
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 16px;
+            background-color: #d434a7;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #c526b3;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Book a Service</h2>
+    
+    <form action="{% url 'process_booking' %}" method="POST">
+        {% csrf_token %}
+        <label for="first_name">First Name</label>
+        <input type="text" id="first_name" name="first_name" required>
+
+        <label for="last_name">Last Name</label>
+        <input type="text" id="last_name" name="last_name" required>
+
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}" placeholder="Enter 10-digit number">
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="service">Select a Service</label>
+        <select id="service" name="service" required>
+            <option value="">--Select Service--</option>
+            <option value="Pre-Wedding Photoshoot">Pre-Wedding Photoshoot</option>
+            <option value="Wedding Photoshoot">Wedding Photoshoot</option>
+            <option value="modeling">Modeling Portfolio</option>
+            <option value="Birthday Photoshoot">Birthday Photoshoot</option>
+            <option value="Event Photoshoot">Event Photoshoot</option>
+            <option value="Maternity Photoshoot">Maternity Photoshoot</option>
+        </select>
+
+        <label for="date_time">Preferred Date & Time</label>
+        <input type="datetime-local" id="date_time" name="date_time" required>
+
+        <label for="payment_method">Choose Payment Method</label>
+        <div class="payment-options">
+            <div class="payment-option">
+                <input type="radio" id="debit_card" name="payment_method" value="debit_card" required>
+                <label for="debit_card">Debit Card</label>
+            </div>
+            <div class="payment-option">
+                <input type="radio" id="credit_card" name="payment_method" value="credit_card" required>
+                <label for="credit_card">Credit Card</label>
+            </div>
+            <div class="payment-option">
+                <input type="radio" id="upi" name="payment_method" value="upi" required>
+                <label for="upi">UPI</label>
+            </div>
+            <div class="payment-option">
+                <input type="radio" id="cash" name="payment_method" value="cash" required>
+                <label for="cash">Cash on Visit</label>
+            </div>
+        </div>
+
+        <button type="submit">Book Now</button>
+    </form>
+</div>
+
+</body>
+</html>
+{% endblock %}
+{% block footer %}
+    {% if not include %}
+        {{ block.super }}
+    {% endif %}
+{% endblock %}
