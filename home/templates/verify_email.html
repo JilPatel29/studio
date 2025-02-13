@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email OTP</title>
+    <title>Verify Email</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -104,8 +104,8 @@
         <form method="POST">
             {% csrf_token %}
             <div class="form-group">
-                <label for="email_otp">Enter Email OTP:</label>
-                <input type="text" id="email_otp" name="email_otp" required>
+                <label for="otp">Enter OTP sent to your email:</label>
+                <input type="text" id="otp" name="otp" required>
             </div>
             <button type="submit">Verify Email</button>
         </form>

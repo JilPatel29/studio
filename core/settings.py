@@ -139,6 +139,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
+# AUTH_USER_MODEL = 'home.CustomUser'  
 
 
 # Default primary key field type

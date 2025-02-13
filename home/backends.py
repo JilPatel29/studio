@@ -14,6 +14,7 @@ class CustomAuthBackend(ModelBackend):
                 return user
         except UserModel.DoesNotExist:
             return None
+        return None
 
     def get_user(self, user_id):
         UserModel = get_user_model()

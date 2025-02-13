@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +38,8 @@
             display: block;
         }
 
-        input[type="text"], input[type="password"] {
+        input[type="text"],
+        input[type="password"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -62,6 +63,7 @@
         button:hover {
             background-color: #dd689a;
         }
+
         .error-message {
             color: #dc3545;
             background-color: #f8d7da;
@@ -90,49 +92,58 @@
             margin-bottom: 15px;
             text-align: center;
         }
+
         .logout-link {
             text-align: center;
             margin-top: 10px;
         }
+
         .message {
             text-align: center;
             padding: 10px;
             margin-bottom: 15px;
             border-radius: 5px;
         }
+
         .message.success {
             background-color: #d4edda;
             color: #155724;
         }
+
         .message.error {
             background-color: #f8d7da;
             color: #721c24;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h2>Login</h2>
 
         {% if messages %}
+        <div class="messages">
             {% for message in messages %}
-                <div class="error-message">
-                    {{ message }}
-                </div>
+            <div class="error-message {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
             {% endfor %}
+        </div>
         {% endif %}
+
 
         <form method="POST">
             {% csrf_token %}
             
-            <label for="username">Username:</label>
-            <input type="text" name="username" required>
-
+            <label for="username">Username or Email:</label>
+            <input type="text" name="username" id="username" required>
+        
             <label for="password">Password:</label>
-            <input type="password" name="password" required>
-
+            <input type="password" name="password" id="password" required>
+        
             <button type="submit">Login</button>
         </form>
+        
 
         <div class="links">
             <a href="{% url 'signup' %}">Don't have an account? Sign Up</a>
@@ -167,4 +178,5 @@
     </div>
 
 </body> -->
+
 </html>

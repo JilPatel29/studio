@@ -7,13 +7,18 @@ from django.dispatch import receiver
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class CustomUser(AbstractUser):
+    email_verified = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     profile_pic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-    is_staff = models.BooleanField(default=False)
-    is_superuser = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)  # Default to inactive until email verified
+    email_verified = models.BooleanField(default=False)
 
     groups = models.ManyToManyField(Group, related_name="customuser_set", blank=True)
-    user_permissions = models.ManyToManyField(Permission, related_name="customuser_permissions_set", blank=True)
+    user_permissions = models.ManyToManyField(
+        Permission, 
+        related_name="customuser_permissions_set", 
+        blank=True
+    )
 
     class Meta:
         verbose_name = 'User'

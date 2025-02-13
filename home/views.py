@@ -3,7 +3,7 @@ from pyexpat.errors import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from core import settings
-from .models import ContactUs, Service, Blog, Gallery, Testimonial  # Removed BlogPost
+from .models import ContactUs, Service, Blog, Gallery, Testimonial
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -27,139 +27,99 @@ from .forms import CustomUserCreationForm
 from .models import CustomUser
 from django.db.models import Q
 
-
 def generate_otp():
     return str(random.randint(100000, 999999))
 
-def send_otp_email(email, otp):
-    try:
-        subject = 'Your Email Verification OTP'
-        message = f'Your OTP for email verification is: {otp}'
-        from_email = 'your.email@gmail.com'  # Use the same email as in settings.py
-        recipient_list = [email]
-        
-        send_mail(
-            subject,
-            message,
-            from_email,
-            recipient_list,
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        print(f"Error sending email: {e}")  # For debugging
-        return False
+def send_verification_email(email, otp):
+    subject = 'Email Verification OTP'
+    message = f'Your OTP for email verification is: {otp}'
+    from_email = settings.EMAIL_HOST_USER
+    recipient_list = [email]
+    
+    send_mail(subject, message, from_email, recipient_list)
 
 def signup_view(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
-            
-            # Check for existing unverified users
-            existing_user = CustomUser.objects.filter(
-                Q(username=username) | Q(email=email),
-                is_active=False
-            ).first()
-            
-            if existing_user:
-                # Delete the unverified user and their associated data
-                existing_user.delete()
-            
-            # Now proceed with new user creation
-            user = form.save(commit=False)
-            user.is_active = False
-            
-            # Store user email in session
-            request.session['user_email'] = user.email
-            
-            # Generate and store OTP
-            email_otp = generate_otp()
-            cache.set(f'email_otp_{user.email}', email_otp, timeout=300)  # 5 minutes timeout
-            
-            # Save user data in session for later use
-            request.session['signup_data'] = {
-                'username': user.username,
-                'email': user.email,
-                'phone_number': user.phone_number,
-                'password': form.cleaned_data['password1']
-            }
-            
-            if send_otp_email(user.email, email_otp):
-                user.save()  # Save the user after successful OTP send
-                messages.success(request, 'Please check your email for OTP verification.')
-                return redirect('verify_email_otp')
-            else:
-                messages.error(request, 'Error sending OTP. Please try again.')
-        else:
-            # Check if there's an active user with the same credentials
-            username = form.data.get('username')
-            email = form.data.get('email')
-            
-            if CustomUser.objects.filter(username=username, is_active=True).exists():
-                messages.error(request, 'This username is already taken by an active user.')
-            elif CustomUser.objects.filter(email=email, is_active=True).exists():
-                messages.error(request, 'This email is already registered to an active user.')
-            else:
-                for field, errors in form.errors.items():
-                    for error in errors:
-                        messages.error(request, f"{error}")
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'signup.html', {'form': form})
+        username = request.POST['username']
+        email = request.POST['email']
+        password1 = request.POST['password1']
+        password2 = request.POST['password2']
 
-def verify_email_otp(request):
+        # Validation
+        if password1 != password2:
+            messages.error(request, "Passwords do not match")
+            return render(request, 'signup.html')
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists")
+            return render(request, 'signup.html')
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already registered")
+            return render(request, 'signup.html')
+
+        # Create inactive user
+        user = User.objects.create_user(username=username, email=email, password=password1)
+        user.is_active = False
+        user.save()
+
+        # Generate and store OTP
+        otp = generate_otp()
+        request.session['email_otp'] = otp
+        request.session['user_id'] = user.id
+
+        # Send verification email
+        send_verification_email(email, otp)
+        
+        messages.success(request, "Please check your email for verification code")
+        return redirect('verify_email')
+
+    return render(request, 'signup.html')
+
+def verify_email(request):
     if request.method == 'POST':
-        email_otp = request.POST.get('email_otp')
-        user_email = request.session.get('user_email')
-        
-        if not user_email:
-            messages.error(request, 'Session expired. Please sign up again.')
-            return redirect('signup')
-        
-        stored_otp = cache.get(f'email_otp_{user_email}')
-        
-        if stored_otp and stored_otp == email_otp:
-            try:
-                user = CustomUser.objects.get(email=user_email)
-                user.is_active = True
-                user.save()
-                
-                # Clean up session and cache
-                del request.session['user_email']
-                if 'signup_data' in request.session:
-                    del request.session['signup_data']
-                cache.delete(f'email_otp_{user_email}')
-                
-                messages.success(request, 'Email verified successfully! You can now login.')
-                return redirect('login')
-            except CustomUser.DoesNotExist:
-                messages.error(request, 'User not found. Please sign up again.')
-                return redirect('signup')
+        user_otp = request.POST.get('otp')
+        stored_otp = request.session.get('email_otp')
+        user_id = request.session.get('user_id')
+
+        if user_otp == stored_otp:
+            user = User.objects.get(id=user_id)
+            user.is_active = True
+            user.save()
+
+            # Clear session
+            del request.session['email_otp']
+            del request.session['user_id']
+
+            messages.success(request, "Email verified successfully! Please login.")
+            return redirect('login')
         else:
-            messages.error(request, 'Invalid OTP. Please try again.')
-    
-    return render(request, 'verify_email_otp.html')
+            messages.error(request, "Invalid OTP")
+
+    return render(request, 'verify_email.html')
 
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+
         user = authenticate(request, username=username, password=password)
-        
+
         if user is not None:
-            login(request, user)
-            messages.success(request, 'Successfully logged in!')
-            return redirect('home')
+            if user.is_active:
+                login(request, user)
+                messages.success(request, "Successfully logged in!")
+                return redirect('home')
+            else:
+                messages.error(request, "Please verify your email first")
         else:
-            messages.error(request, 'Invalid username/email or password.')
-    
+            messages.error(request, "Invalid username or password")
+
     return render(request, 'login.html')
 
 def logout_view(request):
     logout(request)
-    messages.success(request, 'Successfully logged out!')
+    messages.success(request, "Successfully logged out!")
     return redirect('home')
 
 def index(request):
