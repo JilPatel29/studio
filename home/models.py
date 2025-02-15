@@ -91,7 +91,7 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='Pending')
-    payment_method = models.CharField(max_length=50)
+    payment_method = models.CharField(max_length=50)  # Changed from method to payment_method
     
     def __str__(self):
         return f"Payment for Booking #{self.booking.booking_id}"
@@ -130,12 +130,12 @@ class Blog(models.Model):
 class Testimonial(models.Model):
     testimonial_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    feedback = models.TextField()
+    feedback = models.TextField()  # Changed from message to feedback
     rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)  # Changed from date_submitted to created_at
+    is_active = models.BooleanField(default=True)  # Changed from is_displayed to is_active
     
     def __str__(self):
         return f"Testimonial by {self.user.username}"
