@@ -68,7 +68,8 @@ class Booking(models.Model):
         ('Confirmed', 'Confirmed'),
         ('Cancelled', 'Cancelled')
     ]
-    
+     
+    booking_id = models.AutoField(primary_key=True)
     customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     booking_date = models.DateTimeField()
@@ -85,6 +86,7 @@ class Payment(models.Model):
         ('Failed', 'Failed')
     ]
     
+    payment_id = models.AutoField(primary_key=True)
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_date = models.DateTimeField(default=timezone.now)
@@ -92,11 +94,12 @@ class Payment(models.Model):
     payment_method = models.CharField(max_length=50)
     
     def __str__(self):
-        return f"Payment for Booking #{self.booking.id}"
+        return f"Payment for Booking #{self.booking.booking_id}"
 
 class ContactUs(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
+    subject = models.CharField(max_length=200)
     message = models.TextField()
     submitted_at = models.DateTimeField(auto_now_add=True)
     
@@ -108,12 +111,15 @@ class ContactUs(models.Model):
         return f"Message from {self.name}"
 
 class Blog(models.Model):
-    title = models.CharField(max_length=200)
-    content = models.TextField()
+    blog_id = models.AutoField(primary_key=True)
+    title = models.CharField(max_length=200, default='Untitled Blog')
+    content = models.TextField(default='')
     author = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     image = models.ImageField(upload_to='blog_images/', null=True, blank=True)
     short_description = models.TextField(max_length=200, blank=True)
+    category = models.CharField(max_length=50, default='General')
+    read_time = models.IntegerField(default=5)
     
     class Meta:
         ordering = ['-created_at']
@@ -122,6 +128,7 @@ class Blog(models.Model):
         return self.title
 
 class Testimonial(models.Model):
+    testimonial_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     feedback = models.TextField()
     rating = models.IntegerField(
@@ -134,10 +141,20 @@ class Testimonial(models.Model):
         return f"Testimonial by {self.user.username}"
 
 class Gallery(models.Model):
+    CATEGORY_CHOICES = [
+        ('wedding', 'Wedding'),
+        ('prewedding', 'Pre-Wedding'), 
+        ('birthday', 'Birthday'),
+        ('outdoor', 'Outdoor'),
+        ('maternity', 'Maternity')
+    ]
+
+    image_id = models.AutoField(primary_key=True)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='gallery/')
-    title = models.CharField(max_length=200)
+    image = models.ImageField(upload_to='gallery/', null=True, blank=True)
+    title = models.CharField(max_length=200, default='Untitled')
     description = models.TextField(blank=True, null=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='wedding')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

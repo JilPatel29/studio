@@ -6,7 +6,7 @@ from .models import (
     Blog,
     Gallery,
     Testimonial,
-    ContactMessage,
+    ContactUs,
     CustomUser,
     Profile
 )
@@ -43,13 +43,13 @@ class GalleryAdmin(admin.ModelAdmin):
 
 @admin.register(Testimonial)
 class TestimonialAdmin(admin.ModelAdmin):
-    list_display = ('testimonial_id', 'user', 'rating', 'created_at', 'is_displayed')
-    list_filter = ('rating', 'is_displayed', 'created_at')
+    list_display = ('testimonial_id', 'user', 'rating', 'created_at', 'is_active')
+    list_filter = ('rating', 'is_active', 'created_at')
     search_fields = ('user__username', 'feedback')
 
-@admin.register(ContactMessage)
-class ContactMessageAdmin(admin.ModelAdmin):
-    list_display = ('message_id', 'name', 'email', 'submitted_at')
+@admin.register(ContactUs)
+class ContactUsAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'subject', 'submitted_at')
     list_filter = ('submitted_at',)
     search_fields = ('name', 'email', 'message')
 
