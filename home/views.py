@@ -250,17 +250,30 @@ def profile_view(request):
 def edit_profile(request):
     if request.method == 'POST':
         user = request.user
-        user.username = request.POST.get('username')
-        user.email = request.POST.get('email')
-        user.phone_number = request.POST.get('phone_number')
         
+        # Update username if provided
+        new_username = request.POST.get('username')
+        if new_username and new_username != user.username:
+            if CustomUser.objects.filter(username=new_username).exclude(id=user.id).exists():
+                messages.error(request, 'Username already taken.')
+                return redirect('edit_profile')
+            user.username = new_username
+            
+        # Update phone number if provided
+        new_phone = request.POST.get('phone_number')
+        if new_phone:
+            user.phone_number = new_phone
+            
+        # Update profile picture if provided
         if 'profile_pic' in request.FILES:
             user.profile_pic = request.FILES['profile_pic']
-        
+            
         user.save()
+        messages.success(request, 'Profile updated successfully!')
         return redirect('home')
         
     return render(request, 'edit_profile.html')
+
 
 # def signup_view(request):
 #     if request.method == 'POST':
