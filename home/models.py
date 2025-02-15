@@ -45,6 +45,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
         Profile.objects.get_or_create(user=instance)
 
 class Service(models.Model):
+    service_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -91,12 +92,13 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='Pending')
-    payment_method = models.CharField(max_length=50)  # Changed from method to payment_method
+    payment_method = models.CharField(max_length=50)
     
     def __str__(self):
         return f"Payment for Booking #{self.booking.booking_id}"
 
 class ContactUs(models.Model):
+    message_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     email = models.EmailField()
     subject = models.CharField(max_length=200)
@@ -130,12 +132,12 @@ class Blog(models.Model):
 class Testimonial(models.Model):
     testimonial_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    feedback = models.TextField()  # Changed from message to feedback
+    feedback = models.TextField()
     rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
-    created_at = models.DateTimeField(auto_now_add=True)  # Changed from date_submitted to created_at
-    is_active = models.BooleanField(default=True)  # Changed from is_displayed to is_active
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
     
     def __str__(self):
         return f"Testimonial by {self.user.username}"
