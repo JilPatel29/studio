@@ -19,9 +19,9 @@ class ServiceAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ('booking_id', 'user', 'service', 'booking_date', 'status')
+    list_display = ('booking_id', 'customer', 'service', 'booking_date', 'status')
     list_filter = ('status', 'booking_date')
-    search_fields = ('user__username', 'service__name')
+    search_fields = ('customer__username', 'service__name')
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
