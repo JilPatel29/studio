@@ -154,10 +154,15 @@
             margin: 5px 0;
         }
 
-        .signup-button {
+        .auth-buttons {
             position: absolute;
             top: 20px;
             right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .auth-button {
             padding: 10px 20px;
             background: linear-gradient(to right, #ff6f91, #f8c6dc);
             color: white;
@@ -170,7 +175,7 @@
             text-decoration: none;
         }
 
-        .signup-button:hover {
+        .auth-button:hover {
             background: linear-gradient(to right, #dd689a, #de607d);
         }
 
@@ -198,7 +203,10 @@
         <span class="username">{{ user.username }}</span>
     </div>
     {% else %}
-    <a href="{% url 'signup' %}" class="signup-button">Sign Up</a>
+    <div class="auth-buttons">
+        <a href="{% url 'login' %}" class="auth-button">Login</a>
+        <a href="{% url 'signup' %}" class="auth-button">Sign Up</a>
+    </div>
     {% endif %}
 
     {% block header %}

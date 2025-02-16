@@ -27,6 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Application definition
 
@@ -38,9 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
-    
-
 ]
+
 EXTERNAL_APPS=[
     'home',
 ]
@@ -123,24 +124,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-#STATIC_URL = 'static/'
-# MEDIA_ROOT = os.path.join(BASE_DIR,'media')
-# MEDIA_URL = '/media/'
-# STATIC_ROOT = os.path.join(BASE_DIR,'static')
-
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # Make sure the directory exists
+    os.path.join(BASE_DIR, 'static')
 ]
+
+if not os.path.exists(os.path.join(BASE_DIR, 'static')):
+    os.makedirs(os.path.join(BASE_DIR, 'static'))
+
+AUTH_USER_MODEL = 'home.CustomUser'
 
 AUTHENTICATION_BACKENDS = [
     'home.backends.CustomAuthBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
-
-
-# AUTH_USER_MODEL = 'home.CustomUser'  
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
