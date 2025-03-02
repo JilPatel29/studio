@@ -1,10 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
-from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, Profile
 from django.core.validators import RegexValidator
+from .models import CustomUser, Contact, Booking, Testimonial
 
 class CustomUserCreationForm(UserCreationForm):
     phone_regex = RegexValidator(
@@ -74,12 +71,27 @@ class CustomUserCreationForm(UserCreationForm):
             raise forms.ValidationError("This email is already registered.")
         return email
 
-class ProfileUpdateForm(forms.ModelForm):
+class ContactForm(forms.ModelForm):
     class Meta:
-        model = Profile
-        fields = ['bio', 'profile_pic', 'phone', 'address']
+        model = Contact
+        fields = ['name', 'email', 'message']
+        widgets = {
+            'message': forms.Textarea(attrs={'rows': 5}),
+        }
 
-class UserUpdateForm(forms.ModelForm):
+class BookingForm(forms.ModelForm):
     class Meta:
-        model = CustomUser
-        fields = ['username', 'email', 'phone_number']
+        model = Booking
+        fields = ['service', 'booking_date']
+        widgets = {
+            'booking_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
+
+class TestimonialForm(forms.ModelForm):
+    class Meta:
+        model = Testimonial
+        fields = ['feedback', 'rating']
+        widgets = {
+            'feedback': forms.Textarea(attrs={'rows': 4}),
+            'rating': forms.NumberInput(attrs={'min': 1, 'max': 5}),
+        }

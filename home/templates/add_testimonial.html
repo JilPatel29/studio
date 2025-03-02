@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="testimonial-form-container">
+    <h2>Share Your Experience</h2>
+    <p>We value your feedback! Please share your experience with our services.</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_feedback">Your Feedback:</label>
+            {{ form.feedback }}
+            {% if form.feedback.errors %}
+                <div class="error-message">{{ form.feedback.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_rating">Rating (1-5):</label>
+            {{ form.rating }}
+            {% if form.rating.errors %}
+                <div class="error-message">{{ form.rating.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="submit-button">Submit Testimonial</button>
+    </form>
+</div>
+
+<style>
+    .testimonial-form-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    
+    .testimonial-form-container h2 {
+        color: #ff6f91;
+        margin-bottom: 10px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        resize: vertical;
+    }
+    
+    .form-group input {
+        width: 100px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    
+    .error-message {
+        color: #dc3545;
+        font-size: 0.8rem;
+        margin-top: 5px;
+    }
+    
+    .submit-button {
+        background-color: #ff6f91;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    .submit-button:hover {
+        background-color: #e65a7a;
+    }
+</style>
+{% endblock %}

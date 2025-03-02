@@ -3,7 +3,7 @@ from pyexpat.errors import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from core import settings
-from .models import ContactUs, Service, Blog, Gallery, Testimonial
+from .models import Contact, Service, Blog, Gallery, Testimonial, Booking, Payment
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .forms import CustomUserCreationForm, UserUpdateForm, ProfileUpdateForm
+from .forms import CustomUserCreationForm, ContactForm, BookingForm, TestimonialForm
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -124,10 +124,10 @@ def logout_view(request):
 
 def index(request):
     # Get latest approved testimonials
-    testimonials = Testimonial.objects.filter(is_active=True).order_by('-created_at')[:3]
+    testimonials = Testimonial.objects.all().order_by('-testimonial_id')[:3]
     
     # Get gallery items
-    gallery_items = Gallery.objects.all().order_by('-uploaded_at')[:6]
+    gallery_items = Gallery.objects.all().order_by('-image_id')[:6]
     
     # Get services
     services = Service.objects.all()
@@ -142,8 +142,8 @@ def index(request):
 
 def home(request):
     # Similar to index view
-    testimonials = Testimonial.objects.filter(is_active=True).order_by('-created_at')[:3]
-    gallery_items = Gallery.objects.all().order_by('-uploaded_at')[:6]
+    testimonials = Testimonial.objects.all().order_by('-testimonial_id')[:3]
+    gallery_items = Gallery.objects.all().order_by('-image_id')[:6]
     services = Service.objects.all()
     
     context = {
@@ -163,22 +163,15 @@ def admin_view(request):
 
 @login_required
 def profile_view(request):
-    if request.method == 'POST':
-        u_form = UserUpdateForm(request.POST, instance=request.user)
-        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
-        
-        if u_form.is_valid() and p_form.is_valid():
-            u_form.save()
-            p_form.save()
-            messages.success(request, 'Your profile has been updated!')
-            return redirect('profile')
-    else:
-        u_form = UserUpdateForm(instance=request.user)
-        p_form = ProfileUpdateForm(instance=request.user.profile)
-
+    # Get user's bookings
+    bookings = Booking.objects.filter(user=request.user).order_by('-booking_date')
+    
+    # Get user's testimonials
+    testimonials = Testimonial.objects.filter(user=request.user)
+    
     context = {
-        'u_form': u_form,
-        'p_form': p_form
+        'bookings': bookings,
+        'testimonials': testimonials
     }
     return render(request, 'profile.html', context)
 
@@ -213,67 +206,61 @@ def edit_profile(request):
 @login_required
 def add_testimonial(request):
     if request.method == 'POST':
-        message = request.POST.get('message')
-        rating = request.POST.get('rating')
-        
-        if message and rating:
-            testimonial = Testimonial.objects.create(
-                user=request.user,
-                feedback=message,
-                rating=int(rating),
-                is_active=False  # Requires admin approval
-            )
-            messages.success(request, 'Thank you for your review! It will be displayed after approval.')
+        form = TestimonialForm(request.POST)
+        if form.is_valid():
+            testimonial = form.save(commit=False)
+            testimonial.user = request.user
+            testimonial.save()
+            messages.success(request, 'Thank you for your review!')
+            return redirect('home')
         else:
-            messages.error(request, 'Please provide both a message and rating.')
-        
-        return redirect('home')
-    return redirect('home')
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = TestimonialForm()
+    
+    return render(request, 'add_testimonial.html', {'form': form})
 
 def services(request):
-    active_services = Service.objects.filter(is_active=True).order_by('name')
-    return render(request, "services.html", {'services': active_services})
+    services_list = Service.objects.all().order_by('name')
+    return render(request, "services.html", {'services': services_list})
 
 def gallery(request):
-    categories = {
-        'wedding': Gallery.objects.filter(category='wedding'),
-        'prewedding': Gallery.objects.filter(category='prewedding'),
-        'birthday': Gallery.objects.filter(category='birthday'),
-        'outdoor': Gallery.objects.filter(category='outdoor'),
-        'maternity': Gallery.objects.filter(category='maternity'),
-    }
-    return render(request, 'gallery.html', {'categories': categories})
+    gallery_items = Gallery.objects.all()
+    return render(request, 'gallery.html', {'gallery_items': gallery_items})
 
 def contact(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        subject = request.POST.get('subject')
-        message = request.POST.get('message')
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your message has been sent successfully!')
+            return redirect('contact')
+    else:
+        form = ContactForm()
         
-        # Create and save the contact submission
-        contact = ContactUs(
-            name=name,
-            email=email,
-            subject=subject,
-            message=message
-        )
-        contact.save()
-        
-        messages.success(request, 'Your message has been sent successfully!')
-        return redirect('contact')
-        
-    return render(request, "contact.html")
+    return render(request, "contact.html", {'form': form})
 
+@login_required
 def booking(request):
-    return render(request, 'booking.html')
+    if request.method == 'POST':
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.user = request.user
+            booking.save()
+            messages.success(request, 'Booking created successfully!')
+            return redirect('booking_success')
+    else:
+        form = BookingForm()
+    
+    return render(request, 'booking.html', {'form': form})
 
 def blog(request):
     blogs = Blog.objects.all().order_by('-created_at')
     return render(request, "blog.html", {'blogs': blogs})
 
 def blog_detail(request, blog_id):
-    blog = get_object_or_404(Blog, id=blog_id)
+    blog = get_object_or_404(Blog, blog_id=blog_id)
     return render(request, "blog_detail.html", {'blog': blog})
 
 def process_booking(request):
@@ -289,3 +276,6 @@ def process_booking(request):
         return HttpResponse(f"Thank you {first_name} {last_name}, your booking for {service} on {date_time} has been received! Payment method: {payment_method}.")
     else:
         return redirect('booking')
+
+def booking_success(request):
+    return render(request, 'booking_success.html')

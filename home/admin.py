@@ -6,22 +6,20 @@ from .models import (
     Blog,
     Gallery,
     Testimonial,
-    ContactUs,
-    CustomUser,
-    Profile
+    Contact,
+    CustomUser
 )
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'category', 'is_active', 'created_at')
-    list_filter = ('category', 'is_active')
+    list_display = ('service_id', 'name', 'price')
     search_fields = ('name', 'description')
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ('booking_id', 'customer', 'service', 'booking_date', 'status')
+    list_display = ('booking_id', 'user', 'service', 'booking_date', 'status')
     list_filter = ('status', 'booking_date')
-    search_fields = ('customer__username', 'service__name')
+    search_fields = ('user__username', 'service__name')
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
@@ -31,25 +29,25 @@ class PaymentAdmin(admin.ModelAdmin):
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
-    list_display = ('blog_id', 'title', 'author', 'created_at')
-    list_filter = ('created_at', 'author')
+    list_display = ('blog_id', 'title', 'created_at')
+    list_filter = ('created_at',)
     search_fields = ('title', 'content')
 
 @admin.register(Gallery)
 class GalleryAdmin(admin.ModelAdmin):
-    list_display = ('image_id', 'service', 'title', 'uploaded_at')
-    list_filter = ('service', 'uploaded_at')
-    search_fields = ('title', 'description')
+    list_display = ('image_id', 'service', 'image_url')
+    list_filter = ('service',)
+    search_fields = ('service__name',)
 
 @admin.register(Testimonial)
 class TestimonialAdmin(admin.ModelAdmin):
-    list_display = ('testimonial_id', 'user', 'rating', 'created_at', 'is_active')
-    list_filter = ('rating', 'is_active', 'created_at')
+    list_display = ('testimonial_id', 'user', 'rating')
+    list_filter = ('rating',)
     search_fields = ('user__username', 'feedback')
 
-@admin.register(ContactUs)
-class ContactUsAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'subject', 'submitted_at')
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ('message_id', 'name', 'email', 'submitted_at')
     list_filter = ('submitted_at',)
     search_fields = ('name', 'email', 'message')
 
@@ -58,8 +56,3 @@ class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'phone_number', 'is_active', 'email_verified')
     list_filter = ('is_active', 'email_verified')
     search_fields = ('username', 'email', 'phone_number')
-
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone', 'address')
-    search_fields = ('user__username', 'phone', 'address')
