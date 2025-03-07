@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% if not include %}
+        {{ block.super }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery - Love Modelling Studio</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #fdf1f1;
+            color: #333;
+        }
+
+        .gallery-buttons {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .gallery-buttons button {
+            background: #ff6f91;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .gallery-buttons button:hover {
+            background: #f8c6dc;
+            transform: scale(1.1);
+        }
+
+        .gallery-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+            transition: opacity 0.5s ease;
+        }
+
+        .gallery-item {
+            width: 300px;
+            margin: 15px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            background: white;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-info {
+            padding: 15px;
+        }
+
+        .gallery-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .gallery-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .category-section {
+            display: none;
+        }
+
+        .category-section.active {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="gallery-buttons">
+        <button onclick="showCategory('all')" class="active">All</button>
+        <button onclick="showCategory('wedding')">Wedding</button>
+        <button onclick="showCategory('prewedding')">Pre-Wedding</button>
+        <button onclick="showCategory('birthday')">Birthday</button>
+        <button onclick="showCategory('outdoor')">Outdoor</button>
+        <button onclick="showCategory('maternity')">Maternity</button>
+    </div>
+
+    <div class="gallery-container">
+        {% for category, images in categories.items %}
+        <div class="category-section" id="{{ category }}-section">
+            {% for image in images %}
+            <div class="gallery-item">
+                <img src="{{ image.image.url }}" alt="{{ image.title }}">
+                <div class="gallery-info">
+                    <h3>{{ image.title }}</h3>
+                    {% if image.description %}
+                    <p>{{ image.description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function showCategory(category) {
+            const sections = document.querySelectorAll('.category-section');
+            const buttons = document.querySelectorAll('.gallery-buttons button');
+            
+            buttons.forEach(button => button.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (category === 'all') {
+                sections.forEach(section => section.style.display = 'flex');
+            } else {
+                sections.forEach(section => {
+                    if (section.id === `${category}-section`) {
+                        section.style.display = 'flex';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        // Show all images by default
+        showCategory('all');
+    </script>
+</body>
+</html>
+{% endblock %}
+
+{% block footer %}
+    {% if not include %}
+        {{ block.super }}
+    {% endif %}
+{% endblock %}
+
+<!-- 
+<div class="gallery-container">
+     Wedding Photos 
+    <img src="https://josephkingphotography.in/wp-content/uploads/2022/08/Best-wedding-Photographer-Indore-Joseph-King-Photography3.jpg" class="gallery-item wedding" alt="Wedding Photo">
+    <img src="https://img.freepik.com/free-photo/hands-indian-bride-groom-intertwined-together-making-authentic-wedding-ritual_8353-10047.jpg" class="gallery-item wedding" alt="Wedding Sunset">
+
+    <!-- Pre-Wedding Photos 
+    <img src="https://i.pinimg.com/736x/28/4a/ff/284affb51ef5fe6b1bb1a1b9c5ff86b5.jpg" class="gallery-item prewedding" alt="Pre-Wedding Photo">
+    <img src="https://mangeshfilms.in/wp-content/uploads/2024/01/M3M06485-copy-2.webp" class="gallery-item prewedding" alt="Pre-Wedding Love">
+
+    <!-- Birthday Photos 
+    <img src="https://heatherdecampphotography.com/wp-content/uploads/2021/06/19-13537-post/Los-Angeles-Birthday-party-photography-8.jpg" class="gallery-item birthday" alt="Birthday Celebration">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmhLgkgEDFZofxeDnpCHZIX9kCjvCnYJ0xGoYIEf7TxlfgakX7je5JycJLNP1sO_xj04I&usqp=CAU" class="gallery-item birthday" alt="Birthday Joy">
+
+    <!-- Outdoor Photos 
+    <img src="https://images.ctfassets.net/3s5io6mnxfqz/72Afj88vaBRIGWGK6LStJ9/16a8618ea575758efa6e0319e23583ad/AdobeStock_243492854.jpeg" class="gallery-item outdoor" alt="Outdoor Photography">
+    <img src="https://i0.wp.com/www.originalartphotography.co.uk/wp-content/uploads/2018/05/Dramatic-Outdoor-Portraits-2.jpg?fit=1618%2C1080&ssl=1" class="gallery-item outdoor" alt="Outdoor Portrait">
+
+    <!-- Maternity Photos 
+    <img src="https://innfinitesphotography.com/wp-content/uploads/2022/04/baby-shower-photoshoot-7.jpg" class="gallery-item maternity" alt="Maternity Photography">
+    <img src="https://www.diyastudios.com/wp-content/uploads/2023/01/20230108-006-DSP.jpg" class="gallery-item maternity" alt="Maternity Portrait">
+</div> -->
