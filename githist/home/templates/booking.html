@@ -1,11 +1,5 @@
 {% extends 'base.html' %}
 
-{% block header %}
-    {% if not include %}
-        {{ block.super }}
-    {% endif %}
-{% endblock %}
-
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
@@ -13,39 +7,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book a Service</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #fdf1f1;
-            color: #333;
-        }
-        header {
-            text-align: center;
-            padding: 20px;
-            background: #ff6f91;
-            color: #fff;
-        }
-
-        .logo {
-            font-size: 36px;
-            font-family: 'Cursive', sans-serif;
-        }
-
-        nav {
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        nav a {
-            margin: 0 15px;
-            text-decoration: none;
-            color: #fff;
-            font-size: 18px;
-        }
-
-        .container {
+        .booking-container {
             max-width: 800px;
             margin: 50px auto;
             padding: 20px;
@@ -54,121 +18,256 @@
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
+        .form-group {
+            margin-bottom: 20px;
         }
 
         label {
-            margin: 10px 0 5px;
+            display: block;
+            margin-bottom: 5px;
             font-weight: bold;
+            color: #333;
         }
 
-        input[type="text"], input[type="email"], input[type="tel"], input[type="datetime-local"], select {
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="time"],
+        select {
+            width: 100%;
             padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
             font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            margin-bottom: 15px;
         }
 
-        .payment-options {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .payment-option {
-            margin-bottom: 10px;
-        }
-
-        button {
+        .payment-methods {
+            margin: 20px 0;
             padding: 15px;
-            font-size: 16px;
-            background-color: #d434a7;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        .payment-method {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
         }
 
-        button:hover {
-            background-color: #c526b3;
+        .payment-method:hover {
+            background-color: #f9f9f9;
         }
 
-        .error {
-            color: red;
+        .payment-method.selected {
+            border-color: #ff6f91;
+            background-color: #fff5f8;
+        }
+
+        .payment-method input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .submit-button {
+            background-color: #ff6f91;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .submit-button:hover {
+            background-color: #ff5c82;
+        }
+
+        .error-message {
+            color: #dc3545;
             font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .success-message {
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .package-select {
+            margin-bottom: 20px;
+        }
+
+        .package-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .package-card.selected {
+            border-color: #ff6f91;
+            background-color: #fff5f8;
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h2>Book a Service</h2>
-    
-    <form action="{% url 'process_booking' %}" method="POST">
-        {% csrf_token %}
-        <label for="first_name">First Name</label>
-        <input type="text" id="first_name" name="first_name" required>
-
-        <label for="last_name">Last Name</label>
-        <input type="text" id="last_name" name="last_name" required>
-
-        <label for="phone">Phone Number</label>
-        <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}" placeholder="Enter 10-digit number">
-
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required>
-
-        <label for="service">Select a Service</label>
-        <select id="service" name="service" required>
-            <option value="">--Select Service--</option>
-            <option value="Pre-Wedding Photoshoot">Pre-Wedding Photoshoot</option>
-            <option value="Wedding Photoshoot">Wedding Photoshoot</option>
-            <option value="modeling">Modeling Portfolio</option>
-            <option value="Birthday Photoshoot">Birthday Photoshoot</option>
-            <option value="Event Photoshoot">Event Photoshoot</option>
-            <option value="Maternity Photoshoot">Maternity Photoshoot</option>
-        </select>
-
-        <label for="date_time">Preferred Date & Time</label>
-        <input type="datetime-local" id="date_time" name="date_time" required>
-
-        <label for="payment_method">Choose Payment Method</label>
-        <div class="payment-options">
-            <div class="payment-option">
-                <input type="radio" id="debit_card" name="payment_method" value="debit_card" required>
-                <label for="debit_card">Debit Card</label>
+    <div class="booking-container">
+        <h2>Book a Service</h2>
+        
+        <form id="bookingForm" method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="package">Select Package</label>
+                <select id="package" name="package" required>
+                    <option value="">--Select a Package--</option>
+                    {% for package in packages %}
+                    <option value="{{ package.id }}" data-price="{{ package.price }}">
+                        {{ package.name }} - ₹{{ package.price }}
+                    </option>
+                    {% endfor %}
+                </select>
             </div>
-            <div class="payment-option">
-                <input type="radio" id="credit_card" name="payment_method" value="credit_card" required>
-                <label for="credit_card">Credit Card</label>
-            </div>
-            <div class="payment-option">
-                <input type="radio" id="upi" name="payment_method" value="upi" required>
-                <label for="upi">UPI</label>
-            </div>
-            <div class="payment-option">
-                <input type="radio" id="cash" name="payment_method" value="cash" required>
-                <label for="cash">Cash on Visit</label>
-            </div>
-        </div>
 
-        <button type="submit">Book Now</button>
-    </form>
-</div>
+            <div class="form-group">
+                <label for="booking_date">Preferred Date</label>
+                <input type="date" id="booking_date" name="booking_date" required>
+            </div>
 
+            <div class="form-group">
+                <label for="booking_time">Preferred Time</label>
+                <input type="time" id="booking_time" name="booking_time" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" placeholder="Enter 10-digit number" required>
+            </div>
+
+            <div class="payment-methods">
+                <h3>Select Payment Method</h3>
+                <div class="payment-method">
+                    <input type="radio" id="debit_card" name="payment_method" value="debit_card" required>
+                    <label for="debit_card">Debit Card</label>
+                </div>
+                <div class="payment-method">
+                    <input type="radio" id="credit_card" name="payment_method" value="credit_card">
+                    <label for="credit_card">Credit Card</label>
+                </div>
+                <div class="payment-method">
+                    <input type="radio" id="upi" name="payment_method" value="upi">
+                    <label for="upi">UPI</label>
+                </div>
+                <div class="payment-method">
+                    <input type="radio" id="cash" name="payment_method" value="cash">
+                    <label for="cash">Cash on Visit</label>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-button">Proceed to Payment</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('bookingForm');
+            const paymentMethods = document.querySelectorAll('.payment-method');
+
+            // Handle payment method selection
+            paymentMethods.forEach(method => {
+                method.addEventListener('click', function() {
+                    paymentMethods.forEach(m => m.classList.remove('selected'));
+                    this.classList.add('selected');
+                    this.querySelector('input[type="radio"]').checked = true;
+                });
+            });
+
+            // Handle form submission
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+                
+                try {
+                    const response = await fetch('/process-booking/', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        if (formData.get('payment_method') === 'cash') {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            // Initialize Razorpay payment
+                            const options = {
+                                key: ' rzp_test_38CgcUEr3zKkc7', // Replace with your key
+                                amount: data.amount,
+                                currency: data.currency,
+                                name: 'Love Modelling Studio',
+                                description: 'Booking Payment',
+                                order_id: data.order_id,
+                                handler: function(response) {
+                                    // Handle payment success
+                                    handlePaymentSuccess(response);
+                                },
+                                prefill: {
+                                    name: '{{ request.user.get_full_name }}',
+                                    email: '{{ request.user.email }}',
+                                    contact: document.getElementById('phone').value
+                                },
+                                theme: {
+                                    color: '#ff6f91'
+                                }
+                            };
+
+                            const rzp = new Razorpay(options);
+                            rzp.open();
+                        }
+                    } else {
+                        alert('Something went wrong. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                }
+            });
+
+            async function handlePaymentSuccess(response) {
+                try {
+                    const result = await fetch('/payment-callback/', {
+                        method: 'POST',
+                        body: JSON.stringify(response),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await result.json();
+                    if (data.status === 'success') {
+                        window.location.href = '/booking-confirmation/';
+                    } else {
+                        alert('Payment verification failed. Please contact support.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred during payment verification.');
+                }
+            }
+
+            // Disable past dates in date picker
+            const bookingDate = document.getElementById('booking_date');
+            const today = new Date().toISOString().split('T')[0];
+            bookingDate.setAttribute('min', today);
+        });
+    </script>
 </body>
 </html>
-{% endblock %}
-{% block footer %}
-    {% if not include %}
-        {{ block.super }}
-    {% endif %}
 {% endblock %}

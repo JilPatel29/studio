@@ -65,16 +65,6 @@ class Service(models.Model):
         verbose_name_plural = 'Services'
         ordering = ['name']
 
-class Payment(models.Model):
-    payment_id = models.CharField(max_length=100, unique=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateTimeField(auto_now_add=True)
-    method = models.CharField(max_length=50)
-    status = models.CharField(max_length=20)
-
-    def __str__(self):
-        return f"{self.method} - {self.amount} - {self.status}"
-
 class Blog(models.Model):
     title = models.CharField(max_length=200, default="Untitled Blog")
     content = models.TextField(default="")
@@ -147,23 +137,57 @@ class Package(models.Model):
     def __str__(self):
         return self.name
 
+class Payment(models.Model):
+    PAYMENT_STATUS = (
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded')
+    )
+    
+    PAYMENT_METHOD = (
+        ('debit_card', 'Debit Card'),
+        ('credit_card', 'Credit Card'),
+        ('upi', 'UPI'),
+        ('cash', 'Cash on Visit')
+    )
+
+    booking = models.OneToOneField('Booking', on_delete=models.CASCADE, related_name='payment')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
+    transaction_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_signature = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Payment for Booking #{self.booking.id} - {self.get_payment_status_display()}"
+
 class Booking(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('cancelled', 'Cancelled')
+    )
+
     customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     customer_name = models.CharField(max_length=100)
     customer_email = models.EmailField()
+    customer_phone = models.CharField(max_length=15)
     package = models.ForeignKey(Package, on_delete=models.CASCADE)
     booking_date = models.DateField()
     booking_time = models.TimeField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
-    status = models.CharField(
-        max_length=20,
-        choices=[
-            ('Pending', 'Pending'),
-            ('Confirmed', 'Confirmed'),
-            ('Cancelled', 'Cancelled')
-        ],
-        default='Pending'
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Booking for {self.customer_name} on {self.booking_date}"
+
+    class Meta:
+        ordering = ['-created_at']
