@@ -19,6 +19,7 @@
             padding: 20px;
             background: #ff6f91;
             color: #fff;
+            position: relative;
         }
 
         .logo {
@@ -30,65 +31,52 @@
             justify-content: center;
         }
 
+        .auth-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .auth-button {
+            padding: 8px 16px;
+            background: linear-gradient(to right, #ff6f91, #f8c6dc);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .auth-button:hover {
+            background: linear-gradient(to right, #dd689a, #de607d);
+        }
+
         .profile-section {
             position: absolute;
             top: 20px;
             right: 20px;
             display: flex;
             align-items: center;
+            cursor: pointer;
+            text-decoration: none;
         }
 
         .profile-pic {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            cursor: pointer;
             margin-right: 10px;
+            object-fit: cover;
+            border: 2px solid white;
         }
 
         .username {
-            font-size: 18px;
-            color: #181717;
-            font-weight: bold;
-        }
-
-        .edit-profile-container {
-            max-width: 500px;
-            margin: 40px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        button {
-            background: #ff6f91;
             color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #e65a7a;
+            font-size: 16px;
+            margin-right: 10px;
         }
 
         nav {
@@ -129,23 +117,18 @@
         .footer-section h4 {
             color: #fff;
             font-size: 24px;
-            /* Larger heading size */
             margin-bottom: 15px;
         }
 
         .footer-section a {
             color: #fff;
-            /* White text for links */
             text-decoration: none;
             font-size: 18px;
-            /* Larger font size */
             transition: color 0.3s ease;
         }
 
         .footer-section a:hover {
             color: #181717;
-            /* Darker color on hover */
-
             text-decoration: underline;
         }
 
@@ -154,27 +137,6 @@
             margin: 5px 0;
         }
 
-        .signup-button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: linear-gradient(to right, #ff6f91, #f8c6dc);
-            color: white;
-            font-size: 18px;
-            border: none;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: background 0.3s;
-            text-decoration: none;
-        }
-
-        .signup-button:hover {
-            background: linear-gradient(to right, #dd689a, #de607d);
-        }
-
-        /* Responsive Design */
         @media screen and (max-width: 770px) {
             .footer-container {
                 flex-direction: column;
@@ -185,27 +147,47 @@
                 text-align: center;
                 padding: 10px 0;
             }
+
+            .auth-buttons {
+                position: relative;
+                top: 0;
+                right: 0;
+                justify-content: center;
+                margin-top: 10px;
+            }
+
+            .profile-section {
+                position: relative;
+                top: 0;
+                right: 0;
+                justify-content: center;
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
 
 <body>
-    {% if user.is_authenticated %}
-    <div class="profile-section">
-        <a href="{% url 'edit_profile' %}">
-            <img src="{{ user.profile_pic|default:'/static/images/default-profile.png' }}" alt="Profile" class="profile-pic">
-        </a>
-        <span class="username">{{ user.username }}</span>
-    </div>
-    {% else %}
-    <a href="{% url 'signup' %}" class="signup-button">Sign Up</a>
-    {% endif %}
-
-    {% block header %}
     <header>
         <div class="logo">
             <i class="fas fa-heart"></i><u><b>CAPTURE LOVE: LOVE MODELLING STUDIO</b></u>
         </div>
+        <div class="auth-section">
+            {% if user.is_authenticated %}
+                <div class="profile-section">
+                    <a href="{% url 'edit_profile' %}" class="profile-link">
+                        <img src="{{ user.profile_pic.url|default:'/static/images/default-profile.png' }}" alt="Profile" class="profile-pic">
+                        <span class="username">{{ user.username }}</span>
+                    </a>
+                </div>
+            {% else %}
+                <div class="auth-buttons">
+                    <a href="{% url 'login' %}" class="auth-button">Login</a>
+                    <a href="{% url 'signup' %}" class="auth-button">Sign Up</a>
+                </div>
+            {% endif %}
+        </div>
+        
 
         <nav>
             <a href="{% url 'home' %}"><b>Home</b></a>
@@ -216,15 +198,12 @@
             <a href="{% url 'blog' %}"><b>Blog</b></a>
         </nav>
     </header>
-    {% endblock %}
 
-    <!-- Content will be inserted here -->
     <div class="content">
         {% block content %}
         {% endblock %}
     </div>
 
-    {% block footer %}
     <footer>
         <div class="footer-container">
             <div class="footer-section">
@@ -249,8 +228,6 @@
             </div>
         </div>
     </footer>
-    {% endblock %}
-
 </body>
 
 </html>
