@@ -97,23 +97,6 @@
             font-size: 14px;
             margin-top: 5px;
         }
-
-        .package-select {
-            margin-bottom: 20px;
-        }
-
-        .package-card {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .package-card.selected {
-            border-color: #ff6f91;
-            background-color: #fff5f8;
-        }
     </style>
 </head>
 <body>
@@ -188,6 +171,11 @@
                 });
             });
 
+            // Disable past dates in date picker
+            const bookingDate = document.getElementById('booking_date');
+            const today = new Date().toISOString().split('T')[0];
+            bookingDate.setAttribute('min', today);
+
             // Handle form submission
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -208,18 +196,17 @@
                         } else {
                             // Initialize Razorpay payment
                             const options = {
-                                key: ' rzp_test_38CgcUEr3zKkc7', // Replace with your key
+                                key: 'rzp_test_38CgcUEr3zKkc7',
                                 amount: data.amount,
                                 currency: data.currency,
                                 name: 'Love Modelling Studio',
                                 description: 'Booking Payment',
                                 order_id: data.order_id,
                                 handler: function(response) {
-                                    // Handle payment success
                                     handlePaymentSuccess(response);
                                 },
                                 prefill: {
-                                    name: '{{ request.user.get_full_name }}',
+                                    name: '{{ request.user.username }}',
                                     email: '{{ request.user.email }}',
                                     contact: document.getElementById('phone').value
                                 },
@@ -244,10 +231,10 @@
                 try {
                     const result = await fetch('/payment-callback/', {
                         method: 'POST',
-                        body: JSON.stringify(response),
                         headers: {
-                            'Content-Type': 'application/json'
-                        }
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(response)
                     });
 
                     const data = await result.json();
@@ -261,11 +248,6 @@
                     alert('An error occurred during payment verification.');
                 }
             }
-
-            // Disable past dates in date picker
-            const bookingDate = document.getElementById('booking_date');
-            const today = new Date().toISOString().split('T')[0];
-            bookingDate.setAttribute('min', today);
         });
     </script>
 </body>
