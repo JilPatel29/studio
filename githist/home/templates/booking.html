@@ -202,8 +202,26 @@
                                 name: 'Love Modelling Studio',
                                 description: 'Booking Payment',
                                 order_id: data.order_id,
-                                handler: function(response) {
-                                    handlePaymentSuccess(response);
+                                handler: async function(response) {
+                                    try {
+                                        const result = await fetch('/payment-callback/', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                            },
+                                            body: JSON.stringify(response)
+                                        });
+
+                                        const verificationData = await result.json();
+                                        if (verificationData.status === 'success') {
+                                            window.location.href = '/booking-confirmation/';
+                                        } else {
+                                            alert('Payment verification failed. Please contact support.');
+                                        }
+                                    } catch (error) {
+                                        console.error('Error:', error);
+                                        alert('An error occurred during payment verification.');
+                                    }
                                 },
                                 prefill: {
                                     name: '{{ request.user.username }}',
@@ -219,35 +237,13 @@
                             rzp.open();
                         }
                     } else {
-                        alert('Something went wrong. Please try again.');
+                        alert(data.message || 'Something went wrong. Please try again.');
                     }
                 } catch (error) {
                     console.error('Error:', error);
                     alert('An error occurred. Please try again.');
                 }
             });
-
-            async function handlePaymentSuccess(response) {
-                try {
-                    const result = await fetch('/payment-callback/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(response)
-                    });
-
-                    const data = await result.json();
-                    if (data.status === 'success') {
-                        window.location.href = '/booking-confirmation/';
-                    } else {
-                        alert('Payment verification failed. Please contact support.');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('An error occurred during payment verification.');
-                }
-            }
         });
     </script>
 </body>
