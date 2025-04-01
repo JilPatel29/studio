@@ -325,7 +325,7 @@ def process_booking(request):
                 })
             else:
                 # Create Razorpay order for online payments
-                order_amount = int(package.price * 100)  # Convert to paise
+                order_amount = int(float(package.price) * 100)  # Convert to paise
                 order_currency = 'INR'
                 order_receipt = f'order_rcptid_{booking.id}'
                 
@@ -353,6 +353,7 @@ def process_booking(request):
                 })
 
         except Exception as e:
+            print(f"Error in process_booking: {str(e)}")  # Add logging
             return JsonResponse({
                 'status': 'error',
                 'message': str(e)
@@ -360,16 +361,15 @@ def process_booking(request):
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
-@csrf_exempt 
+@csrf_exempt
 def payment_callback(request):
     if request.method == "POST":
         try:
-            # Get payment details from POST data
-            payment_id = request.POST.get('razorpay_payment_id', '')
-            order_id = request.POST.get('razorpay_order_id', '')
-            signature = request.POST.get('razorpay_signature', '')
+            data = json.loads(request.body)
+            payment_id = data.get('razorpay_payment_id')
+            order_id = data.get('razorpay_order_id')
+            signature = data.get('razorpay_signature')
             
-            # Verify payment signature
             params_dict = {
                 'razorpay_payment_id': payment_id,
                 'razorpay_order_id': order_id,
@@ -396,12 +396,14 @@ def payment_callback(request):
                     'message': 'Payment successful'
                 })
             except Exception as e:
+                print(f"Error in signature verification: {str(e)}")  # Add logging
                 return JsonResponse({
                     'status': 'error',
                     'message': 'Payment verification failed'
                 })
                 
         except Exception as e:
+            print(f"Error in payment_callback: {str(e)}")  # Add logging
             return JsonResponse({
                 'status': 'error',
                 'message': str(e)
