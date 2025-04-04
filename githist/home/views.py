@@ -294,13 +294,17 @@ def process_booking(request):
             payment_method = request.POST.get('payment_method')
             phone = request.POST.get('phone')
             
+            # Get the package
             package = Package.objects.get(id=package_id)
+            
+            # Get CustomUser instance
+            custom_user = CustomUser.objects.get(id=request.user.id)
             
             # Create booking
             booking = Booking.objects.create(
-                customer=request.user,
-                customer_name=request.user.username,
-                customer_email=request.user.email,
+                customer=custom_user,
+                customer_name=custom_user.username,
+                customer_email=custom_user.email,
                 customer_phone=phone,
                 package=package,
                 booking_date=booking_date,
@@ -325,12 +329,12 @@ def process_booking(request):
                 })
             else:
                 # Create Razorpay order for online payments
-                order_amount = int(float(package.price) * 100)  # Convert to paise
+                amount_in_paise = int(float(package.price) * 100)  # Convert to paise
                 order_currency = 'INR'
                 order_receipt = f'order_rcptid_{booking.id}'
                 
                 razorpay_order = razorpay_client.order.create({
-                    'amount': order_amount,
+                    'amount': amount_in_paise,
                     'currency': order_currency,
                     'receipt': order_receipt,
                 })
@@ -347,19 +351,31 @@ def process_booking(request):
                 return JsonResponse({
                     'status': 'success',
                     'order_id': razorpay_order['id'],
-                    'amount': order_amount,
+                    'amount': amount_in_paise,
                     'currency': order_currency,
                     'booking_id': booking.id
                 })
 
+        except CustomUser.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'User authentication error'
+            })
+        except Package.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Selected package not found'
+            })
         except Exception as e:
-            print(f"Error in process_booking: {str(e)}")  # Add logging
             return JsonResponse({
                 'status': 'error',
                 'message': str(e)
             })
 
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    })
 
 @csrf_exempt
 def payment_callback(request):
@@ -377,6 +393,7 @@ def payment_callback(request):
             }
             
             try:
+                # Verify payment signature
                 razorpay_client.utility.verify_payment_signature(params_dict)
                 
                 # Update payment status
@@ -395,15 +412,13 @@ def payment_callback(request):
                     'status': 'success',
                     'message': 'Payment successful'
                 })
-            except Exception as e:
-                print(f"Error in signature verification: {str(e)}")  # Add logging
+            except razorpay.errors.SignatureVerificationError:
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'Payment verification failed'
+                    'message': 'Invalid payment signature'
                 })
                 
         except Exception as e:
-            print(f"Error in payment_callback: {str(e)}")  # Add logging
             return JsonResponse({
                 'status': 'error',
                 'message': str(e)
@@ -416,4 +431,3 @@ def payment_callback(request):
 
 def booking_confirmation(request):
     return render(request, 'booking_confirmation.html')
-

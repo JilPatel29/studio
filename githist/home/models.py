@@ -5,13 +5,13 @@ from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import MinValueValidator, MaxValueValidator
+from decimal import Decimal
 
 class CustomUser(AbstractUser):
     email_verified = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     profile_pic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     is_active = models.BooleanField(default=False)  # Default to inactive until email verified
-    email_verified = models.BooleanField(default=False)
 
     groups = models.ManyToManyField(Group, related_name="customuser_set", blank=True)
     user_permissions = models.ManyToManyField(
@@ -42,10 +42,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
     else:
-        # Update the profile if it exists
         Profile.objects.get_or_create(user=instance)
-
-# Remove the second signal handler since we combined both operations in one
 
 class Service(models.Model):
     name = models.CharField(max_length=100)
@@ -137,35 +134,6 @@ class Package(models.Model):
     def __str__(self):
         return self.name
 
-class Payment(models.Model):
-    PAYMENT_STATUS = (
-        ('pending', 'Pending'),
-        ('completed', 'Completed'),
-        ('failed', 'Failed'),
-        ('refunded', 'Refunded')
-    )
-    
-    PAYMENT_METHOD = (
-        ('debit_card', 'Debit Card'),
-        ('credit_card', 'Credit Card'),
-        ('upi', 'UPI'),
-        ('cash', 'Cash on Visit')
-    )
-
-    booking = models.OneToOneField('Booking', on_delete=models.CASCADE, related_name='payment')
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD)
-    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
-    transaction_id = models.CharField(max_length=100, blank=True, null=True)
-    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
-    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
-    razorpay_signature = models.CharField(max_length=100, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Payment for Booking #{self.booking.id} - {self.get_payment_status_display()}"
-
 class Booking(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -181,7 +149,7 @@ class Booking(models.Model):
     booking_date = models.DateField()
     booking_time = models.TimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
@@ -189,5 +157,44 @@ class Booking(models.Model):
     def __str__(self):
         return f"Booking for {self.customer_name} on {self.booking_date}"
 
+    def save(self, *args, **kwargs):
+        if not self.total_amount:
+            self.total_amount = self.package.price
+        super().save(*args, **kwargs)
+
     class Meta:
         ordering = ['-created_at']
+
+class Payment(models.Model):
+    PAYMENT_STATUS = (
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded')
+    )
+    
+    PAYMENT_METHOD = (
+        ('debit_card', 'Debit Card'),
+        ('credit_card', 'Credit Card'),
+        ('upi', 'UPI'),
+        ('cash', 'Cash on Visit')
+    )
+
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='payment', default=1)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD, default='cash')
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
+    transaction_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_signature = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Payment for Booking #{self.booking.id} - {self.get_payment_status_display()}"
+
+    def save(self, *args, **kwargs):
+        if not self.amount:
+            self.amount = self.booking.total_amount
+        super().save(*args, **kwargs)
