@@ -179,13 +179,16 @@
             // Handle form submission
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-
+                
                 const formData = new FormData(form);
                 
                 try {
                     const response = await fetch('/process-booking/', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
                     });
 
                     const data = await response.json();
@@ -204,15 +207,20 @@
                                 order_id: data.order_id,
                                 handler: async function(response) {
                                     try {
-                                        const result = await fetch('/payment-callback/', {
+                                        const verificationResponse = await fetch('/payment-callback/', {
                                             method: 'POST',
                                             headers: {
                                                 'Content-Type': 'application/json',
+                                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                                             },
-                                            body: JSON.stringify(response)
+                                            body: JSON.stringify({
+                                                razorpay_payment_id: response.razorpay_payment_id,
+                                                razorpay_order_id: response.razorpay_order_id,
+                                                razorpay_signature: response.razorpay_signature
+                                            })
                                         });
 
-                                        const verificationData = await result.json();
+                                        const verificationData = await verificationResponse.json();
                                         if (verificationData.status === 'success') {
                                             window.location.href = '/booking-confirmation/';
                                         } else {

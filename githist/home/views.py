@@ -1,7 +1,7 @@
 from functools import cache
 from pyexpat.errors import messages
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from core import settings
 from .models import ContactUs, Service, Blog, Gallery, Testimonial
 from django.contrib.auth import login, authenticate
@@ -27,13 +27,15 @@ from .forms import CustomUserCreationForm
 from .models import CustomUser
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from .models import Booking, Payment, Package
 import razorpay
 import json
+import hmac
+import hashlib
+
 
 def generate_otp():
     return str(random.randint(100000, 999999))
@@ -227,7 +229,6 @@ def add_testimonial(request):
         return redirect('home')
     return redirect('home')
 
-
 def services(request):
     active_services = Service.objects.filter(is_active=True).order_by('name')
     return render(request, "services.html", {'services': active_services})
@@ -249,7 +250,6 @@ def contact(request):
         subject = request.POST.get('subject')
         message = request.POST.get('message')
         
-        # Create and save the contact submission
         contact = ContactUs(
             name=name,
             email=email,
@@ -270,7 +270,6 @@ def blog(request):
 def blog_detail(request, blog_id):
     blog = get_object_or_404(Blog, id=blog_id)
     return render(request, "blog_detail.html", {'blog': blog})
-
 razorpay_client = razorpay.Client(
     auth=("rzp_test_38CgcUEr3zKkc7", "RyozxVs6ONs9qdaGcuLWyaUo")
 )
@@ -297,7 +296,6 @@ def process_booking(request):
             # Get the package
             package = Package.objects.get(id=package_id)
             
-            # Get CustomUser instance
             custom_user = CustomUser.objects.get(id=request.user.id)
             
             # Create booking
@@ -312,6 +310,7 @@ def process_booking(request):
                 total_amount=package.price,
                 status='pending'
             )
+    
 
             # Handle different payment methods
             if payment_method == 'cash':
@@ -352,20 +351,9 @@ def process_booking(request):
                     'status': 'success',
                     'order_id': razorpay_order['id'],
                     'amount': amount_in_paise,
-                    'currency': order_currency,
-                    'booking_id': booking.id
+                    'currency': order_currency
                 })
 
-        except CustomUser.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'User authentication error'
-            })
-        except Package.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Selected package not found'
-            })
         except Exception as e:
             return JsonResponse({
                 'status': 'error',
@@ -431,3 +419,5 @@ def payment_callback(request):
 
 def booking_confirmation(request):
     return render(request, 'booking_confirmation.html')
+
+# Keep all other view functions unchanged
