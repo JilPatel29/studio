@@ -54,14 +54,20 @@ def process_booking(request):
             # Get the package
             package = Package.objects.get(id=package_id)
             
-            # Get CustomUser instance
-            custom_user = CustomUser.objects.get(email=request.user.email)
+            # Get or create CustomUser instance
+            custom_user, created = CustomUser.objects.get_or_create(
+                email=request.user.email,
+                defaults={
+                    'username': request.user.username,
+                    'email': request.user.email,
+                }
+            )
             
             # Create booking
             booking = Booking.objects.create(
                 customer=custom_user,
-                customer_name=custom_user.username,
-                customer_email=custom_user.email,
+                customer_name=request.user.username,
+                customer_email=request.user.email,
                 customer_phone=phone,
                 package=package,
                 booking_date=booking_date,
@@ -128,7 +134,6 @@ def process_booking(request):
         'status': 'error',
         'message': 'Invalid request method'
     })
-
 
 def generate_otp():
     return str(random.randint(100000, 999999))
@@ -427,5 +432,3 @@ def payment_callback(request):
 
 def booking_confirmation(request):
     return render(request, 'booking_confirmation.html')
-
-# Keep all other view functions unchanged
