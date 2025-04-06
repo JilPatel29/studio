@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-from pathlib import Path , os
+from pathlib import Path, os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,10 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
-    
-
 ]
-EXTERNAL_APPS=[
+
+EXTERNAL_APPS = [
     'home',
 ]
 
@@ -123,29 +122,26 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-#STATIC_URL = 'static/'
-# MEDIA_ROOT = os.path.join(BASE_DIR,'media')
-# MEDIA_URL = '/media/'
-# STATIC_ROOT = os.path.join(BASE_DIR,'static')
-
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',  # Make sure the directory exists
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 AUTHENTICATION_BACKENDS = [
     'home.backends.CustomAuthBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-
-# AUTH_USER_MODEL = 'home.CustomUser'  
-
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -155,4 +151,4 @@ EMAIL_HOST_USER = 'jilpatel2952005@gmail.com'  # Replace with your Gmail address
 EMAIL_HOST_PASSWORD = 'xcss yyfp enjh pgsh'  # Replace with your Gmail app password
 
 RAZORPAY_KEY_ID = 'rzp_test_0Att5ZPFjE4MYb'
-RAZORPAY_KEY_SECRET = '  xjZxCblnH9Fxy8Ngn4qppuKu'
+RAZORPAY_KEY_SECRET = 'xjZxCblnH9Fxy8Ngn4qppuKu'
