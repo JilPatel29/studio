@@ -293,18 +293,25 @@ def profile_view(request):
 
 def forgot_password(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        email = request.POST.get('email', '').strip()
+
+        if not email:
+            messages.error(request, "Please enter your email address.")
+            return render(request, 'forgot_password.html')
+
         try:
-            user = CustomUser.objects.get(email=email)
-            return redirect('reset_password', email=email)
+            user = CustomUser.objects.get(email__iexact=email)
+            return redirect('reset_password', email=user.email)  # redirect with email
         except CustomUser.DoesNotExist:
             messages.error(request, "No account found with this email address.")
-            return render(request, 'forgot_password.html')
+            return render(request, 'forgot_password.html', {'email': email})
+
     return render(request, 'forgot_password.html')
+
 
 def reset_password(request, email):
     try:
-        user = CustomUser.objects.get(email=email)
+        user = CustomUser.objects.get(email__iexact=email)
     except CustomUser.DoesNotExist:
         messages.error(request, "Invalid reset link.")
         return redirect('login')

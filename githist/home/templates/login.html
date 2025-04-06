@@ -116,14 +116,14 @@
         }
 
         .forgot-password {
-            text-align: right;
-            margin-bottom: 15px;
+            text-align: center;
+            margin-top: 10px;
         }
 
         .forgot-password a {
             color: #f4839d;
-            font-size: 14px;
             text-decoration: none;
+            font-size: 14px;
         }
 
         .forgot-password a:hover {
@@ -154,13 +154,13 @@
         
             <label for="password">Password:</label>
             <input type="password" name="password" id="password" required>
-
-            <div class="forgot-password">
-                <a href="{% url 'forgot_password' %}">Forgot Password?</a>
-            </div>
         
             <button type="submit">Login</button>
         </form>
+
+        <div class="forgot-password">
+            <a href="{% url 'forgot_password' %}">Forgot Password?</a>
+        </div>
 
         <div class="links">
             <a href="{% url 'signup' %}">Don't have an account? Sign Up</a>
