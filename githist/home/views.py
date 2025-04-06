@@ -294,15 +294,22 @@ def profile_view(request):
 def forgot_password(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
-
+        
         if not email:
             messages.error(request, "Please enter your email address.")
             return render(request, 'forgot_password.html')
 
         try:
-            user = CustomUser.objects.get(email__iexact=email)
-            return redirect('reset_password', email=user.email)  # redirect with email
-        except CustomUser.DoesNotExist:
+            # Try to find user by email (case-insensitive)
+            user = User.objects.get(email__iexact=email)
+            
+            # Store email in session to verify in reset_password view
+            request.session['reset_password_email'] = email
+            
+            messages.success(request, "You can now reset your password.")
+            return redirect('reset_password', email=email)
+            
+        except User.DoesNotExist:
             messages.error(request, "No account found with this email address.")
             return render(request, 'forgot_password.html', {'email': email})
 
@@ -310,28 +317,38 @@ def forgot_password(request):
 
 
 def reset_password(request, email):
-    try:
-        user = CustomUser.objects.get(email__iexact=email)
-    except CustomUser.DoesNotExist:
-        messages.error(request, "Invalid reset link.")
+    stored_email = request.session.get('reset_password_email')
+
+    if stored_email != email:
+        messages.error(request, "Invalid or expired reset link.")
         return redirect('login')
 
     if request.method == 'POST':
-        password1 = request.POST.get('password1')
-        password2 = request.POST.get('password2')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
 
-        if password1 != password2:
+        if new_password != confirm_password:
             messages.error(request, "Passwords do not match.")
             return render(request, 'reset_password.html')
 
-        if len(password1) < 8:
+        if len(new_password) < 8:
             messages.error(request, "Password must be at least 8 characters long.")
             return render(request, 'reset_password.html')
 
-        user.set_password(password1)
-        user.save()
-        messages.success(request, "Password has been reset successfully. Please login with your new password.")
-        return redirect('login')
+        try:
+            user = User.objects.get(email__iexact=email)
+            user.set_password(new_password)
+            user.save()
+
+            # Clear session data
+            request.session.pop('reset_password_email', None)
+
+            messages.success(request, "Password has been reset successfully. Please login with your new password.")
+            return redirect('login')
+
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+            return redirect('login')
 
     return render(request, 'reset_password.html')
 
