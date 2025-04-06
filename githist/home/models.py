@@ -173,10 +173,8 @@ class Payment(models.Model):
     )
     
     PAYMENT_METHOD = (
-        ('debit_card', 'Debit Card'),
-        ('credit_card', 'Credit Card'),
-        ('upi', 'UPI'),
-        ('cash', 'Cash on Visit')
+        ('cash', 'Cash on Visit'),
+        ('online', 'Online Payment')
     )
 
     booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='payment', default=1)
