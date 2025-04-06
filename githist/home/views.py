@@ -250,8 +250,8 @@ def index(request):
 
 def home(request):
     # Similar to index view
-    testimonials = Testimonial.objects.filter(is_displayed=True).order_by('-date_submitted')[:3]
-    gallery_items = Gallery.objects.all().order_by('-uploaded_at')[:6]
+    testimonials = Testimonial.objects.filter(is_displayed=True).order_by('-date_submitted')[:6]
+    gallery_items = Gallery.objects.all().order_by('-uploaded_at')[:12]
     services = Service.objects.all()
     
     context = {
@@ -432,7 +432,7 @@ def blog_detail(request, blog_id):
     return render(request, "blog_detail.html", {'blog': blog})
 
 
-@login_required
+# @login_required
 def booking(request):
     packages = Package.objects.all()
     context = {

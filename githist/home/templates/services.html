@@ -119,7 +119,8 @@
                         <img src="https://via.placeholder.com/300x200" alt="{{ service.name }}">
                     {% endif %}
                     <h3>{{ service.name }}</h3>
-                    <p>{{ service.description }}</p>
+                    <p>{{ service.description|safe }}</p>
+
                 </div>
             {% endif %}
         {% endfor %}
