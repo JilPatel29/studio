@@ -114,6 +114,21 @@
             background-color: #f8d7da;
             color: #721c24;
         }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+
+        .forgot-password a {
+            color: #f4839d;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -131,7 +146,6 @@
         </div>
         {% endif %}
 
-
         <form method="POST">
             {% csrf_token %}
             
@@ -140,43 +154,17 @@
         
             <label for="password">Password:</label>
             <input type="password" name="password" id="password" required>
+
+            <div class="forgot-password">
+                <a href="{% url 'forgot_password' %}">Forgot Password?</a>
+            </div>
         
             <button type="submit">Login</button>
         </form>
-        
 
         <div class="links">
             <a href="{% url 'signup' %}">Don't have an account? Sign Up</a>
         </div>
     </div>
 </body>
-<!-- <body>
-
-    <div class="container">
-        <h2>Login</h2>
-
-        
-        {% if messages %}
-            {% for message in messages %}
-                <div class="error-message">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-
-        <form method="POST">
-            {% csrf_token %}
-            
-            <label for="username">Username:</label>
-            <input type="text" name="username" required><br>
-
-            <label for="password">Password:</label>
-            <input type="password" name="password" required><br>
-
-            <button type="submit">Login</button>
-        </form>
-
-        <a href="{% url 'signup' %}">Don't have an account? Sign Up</a>
-    </div>
-
-</body> -->
-
 </html>

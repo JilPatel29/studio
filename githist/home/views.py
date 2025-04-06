@@ -290,6 +290,44 @@ def profile_view(request):
     }
     return render(request, 'profile.html', context)
 
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = CustomUser.objects.get(email=email)
+            return redirect('reset_password', email=email)
+        except CustomUser.DoesNotExist:
+            messages.error(request, "No account found with this email address.")
+            return render(request, 'forgot_password.html')
+    return render(request, 'forgot_password.html')
+
+def reset_password(request, email):
+    try:
+        user = CustomUser.objects.get(email=email)
+    except CustomUser.DoesNotExist:
+        messages.error(request, "Invalid reset link.")
+        return redirect('login')
+
+    if request.method == 'POST':
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+
+        if password1 != password2:
+            messages.error(request, "Passwords do not match.")
+            return render(request, 'reset_password.html')
+
+        if len(password1) < 8:
+            messages.error(request, "Password must be at least 8 characters long.")
+            return render(request, 'reset_password.html')
+
+        user.set_password(password1)
+        user.save()
+        messages.success(request, "Password has been reset successfully. Please login with your new password.")
+        return redirect('login')
+
+    return render(request, 'reset_password.html')
+
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
