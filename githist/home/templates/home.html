@@ -202,9 +202,11 @@
         <div class="services-container">
             {% for service in services %}
             <div class="service-card">
+                {% if service.image %}
+                    <img src="{{ service.image.url }}" alt="{{ service.name }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                {% endif %}
                 <h3>{{ service.name }}</h3>
                 <p>{{ service.description }}</p>
-                <p class="price">₹{{ service.price }}</p>
             </div>
             {% endfor %}
         </div>
@@ -217,7 +219,9 @@
         <div class="gallery-grid">
             {% for item in gallery_items %}
             <div class="gallery-item">
-                <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                {% endif %}
             </div>
             {% endfor %}
         </div>
@@ -247,5 +251,5 @@
     {% endif %}
 </body>
 </html>
-{% include 'contact.html' with include=True %}
+
 {% endblock %}
