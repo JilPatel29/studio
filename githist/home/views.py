@@ -36,6 +36,99 @@ import json
 import hmac
 import hashlib
 
+razorpay_client = razorpay.Client(
+    auth=("rzp_test_0Att5ZPFjE4MYb", "xjZxCblnH9Fxy8Ngn4qppuKu")
+)
+
+@login_required
+def process_booking(request):
+    if request.method == "POST":
+        try:
+            # Get form data
+            package_id = request.POST.get('package')
+            booking_date = request.POST.get('booking_date')
+            booking_time = request.POST.get('booking_time')
+            payment_method = request.POST.get('payment_method')
+            phone = request.POST.get('phone')
+            
+            # Get the package
+            package = Package.objects.get(id=package_id)
+            
+            # Get CustomUser instance
+            custom_user = CustomUser.objects.get(email=request.user.email)
+            
+            # Create booking
+            booking = Booking.objects.create(
+                customer=custom_user,
+                customer_name=custom_user.username,
+                customer_email=custom_user.email,
+                customer_phone=phone,
+                package=package,
+                booking_date=booking_date,
+                booking_time=booking_time,
+                total_amount=package.price,
+                status='pending'
+            )
+
+            # Handle different payment methods
+            if payment_method == 'cash':
+                # Create payment record for cash
+                Payment.objects.create(
+                    booking=booking,
+                    amount=package.price,
+                    payment_method='cash',
+                    payment_status='pending'
+                )
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Booking confirmed for cash payment',
+                    'redirect_url': '/booking-confirmation/'
+                })
+            else:
+                # Create Razorpay order for online payments
+                amount_in_paise = int(float(package.price) * 100)  # Convert to paise
+                order_currency = 'INR'
+                order_receipt = f'order_rcptid_{booking.id}'
+                
+                razorpay_order = razorpay_client.order.create({
+                    'amount': amount_in_paise,
+                    'currency': order_currency,
+                    'receipt': order_receipt,
+                    'payment_capture': '1'
+                })
+
+                # Create payment record
+                payment = Payment.objects.create(
+                    booking=booking,
+                    amount=package.price,
+                    payment_method=payment_method,
+                    payment_status='pending',
+                    razorpay_order_id=razorpay_order['id']
+                )
+
+                # Return data needed for Razorpay checkout
+                return JsonResponse({
+                    'status': 'success',
+                    'order_id': razorpay_order['id'],
+                    'amount': amount_in_paise,
+                    'currency': order_currency,
+                    'razorpay_key': "rzp_test_0Att5ZPFjE4MYb",
+                    'customer_name': booking.customer_name,
+                    'customer_email': booking.customer_email,
+                    'customer_phone': booking.customer_phone
+                })
+
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            })
+
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    })
+
 
 def generate_otp():
     return str(random.randint(100000, 999999))
@@ -270,9 +363,7 @@ def blog(request):
 def blog_detail(request, blog_id):
     blog = get_object_or_404(Blog, id=blog_id)
     return render(request, "blog_detail.html", {'blog': blog})
-razorpay_client = razorpay.Client(
-    auth=("rzp_test_38CgcUEr3zKkc7", "RyozxVs6ONs9qdaGcuLWyaUo")
-)
+
 
 @login_required
 def booking(request):
@@ -281,89 +372,6 @@ def booking(request):
         'packages': packages
     }
     return render(request, 'booking.html', context)
-
-@login_required
-def process_booking(request):
-    if request.method == "POST":
-        try:
-            # Get form data
-            package_id = request.POST.get('package')
-            booking_date = request.POST.get('booking_date')
-            booking_time = request.POST.get('booking_time')
-            payment_method = request.POST.get('payment_method')
-            phone = request.POST.get('phone')
-            
-            # Get the package
-            package = Package.objects.get(id=package_id)
-            
-            custom_user = CustomUser.objects.get(id=request.user.id)
-            
-            # Create booking
-            booking = Booking.objects.create(
-                customer=custom_user,
-                customer_name=custom_user.username,
-                customer_email=custom_user.email,
-                customer_phone=phone,
-                package=package,
-                booking_date=booking_date,
-                booking_time=booking_time,
-                total_amount=package.price,
-                status='pending'
-            )
-    
-
-            # Handle different payment methods
-            if payment_method == 'cash':
-                # Create payment record for cash
-                Payment.objects.create(
-                    booking=booking,
-                    amount=package.price,
-                    payment_method='cash',
-                    payment_status='pending'
-                )
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Booking confirmed for cash payment',
-                    'redirect_url': '/booking-confirmation/'
-                })
-            else:
-                # Create Razorpay order for online payments
-                amount_in_paise = int(float(package.price) * 100)  # Convert to paise
-                order_currency = 'INR'
-                order_receipt = f'order_rcptid_{booking.id}'
-                
-                razorpay_order = razorpay_client.order.create({
-                    'amount': amount_in_paise,
-                    'currency': order_currency,
-                    'receipt': order_receipt,
-                })
-
-                # Create payment record
-                Payment.objects.create(
-                    booking=booking,
-                    amount=package.price,
-                    payment_method=payment_method,
-                    payment_status='pending',
-                    razorpay_order_id=razorpay_order['id']
-                )
-
-                return JsonResponse({
-                    'status': 'success',
-                    'order_id': razorpay_order['id'],
-                    'amount': amount_in_paise,
-                    'currency': order_currency
-                })
-
-        except Exception as e:
-            return JsonResponse({
-                'status': 'error',
-                'message': str(e)
-            })
-
-    return JsonResponse({
-        'status': 'error',
-        'message': 'Invalid request method'
-    })
 
 @csrf_exempt
 def payment_callback(request):
