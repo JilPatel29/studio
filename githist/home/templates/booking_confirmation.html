@@ -17,7 +17,15 @@
             You will receive a confirmation email shortly with all the details.
         </p>
 
+        {% if booking and not booking.testimonial %}
         <div style="margin-top: 30px;">
+            <a href="{% url 'add_testimonial' booking.id %}" style="background-color: #ff6f91; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; margin-bottom: 15px;">
+                Share Your Experience
+            </a>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 15px;">
             <a href="{% url 'home' %}" style="background-color: #ff6f91; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block;">
                 Return to Home
             </a>

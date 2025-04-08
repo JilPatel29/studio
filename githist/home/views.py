@@ -368,26 +368,33 @@ def edit_profile(request):
         
     return render(request, 'edit_profile.html')
 
+
 @login_required
-def add_testimonial(request):
+def add_testimonial(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, customer=request.user, status='confirmed')
+    
+    # Check if testimonial already exists
+    if hasattr(booking, 'testimonial'):
+        messages.error(request, 'You have already submitted a review for this booking.')
+        return redirect('booking_confirmation')
+
     if request.method == 'POST':
         message = request.POST.get('message')
         rating = request.POST.get('rating')
         
         if message and rating:
             testimonial = Testimonial.objects.create(
-                customer_name=request.user.username,
+                booking=booking,
                 message=message,
                 rating=int(rating),
-                customer=request.user.username,
                 is_displayed=False  # Requires admin approval
             )
             messages.success(request, 'Thank you for your review! It will be displayed after approval.')
+            return redirect('booking_confirmation')
         else:
             messages.error(request, 'Please provide both a message and rating.')
-        
-        return redirect('home')
-    return redirect('home')
+    
+    return render(request, 'add_testimonial.html')
 
 def services(request):
     active_services = Service.objects.filter(is_active=True).order_by('name')
@@ -492,5 +499,14 @@ def payment_callback(request):
         'message': 'Invalid request method'
     })
 
+
 def booking_confirmation(request):
-    return render(request, 'booking_confirmation.html')
+
+    booking_id = request.session.get('booking_id')
+
+    if booking_id:
+        booking = get_object_or_404(Booking, id=booking_id)
+    else:
+        booking = None
+
+    return render(request, 'booking_confirmation.html', {'booking': booking})

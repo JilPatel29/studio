@@ -99,16 +99,16 @@ class Gallery(models.Model):
     def __str__(self):
         return self.title
 
+
 class Testimonial(models.Model):
-    customer_name = models.CharField(max_length=100)
+    booking = models.ForeignKey('Booking', on_delete=models.CASCADE, null=True, blank=True)
     message = models.TextField()
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
     date_submitted = models.DateTimeField(auto_now_add=True)
-    customer = models.CharField(max_length=100, default='Anonymous')
-    is_displayed = models.BooleanField(default=True)
+    is_displayed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.customer_name} - {self.rating} stars"
+        return f"Review by {self.booking.customer_name}"
 
     class Meta:
         ordering = ['-date_submitted']

@@ -19,7 +19,7 @@ urlpatterns = [
     path('verify-email/', views.verify_email, name='verify_email'),
     path('profile/', views.profile_view, name='profile'),
     path('edit-profile/', views.edit_profile, name='edit_profile'),
-    path('add-testimonial/', views.add_testimonial, name='add_testimonial'),
+    path('add-testimonial/<int:booking_id>/', views.add_testimonial, name='add_testimonial'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-password/<str:email>/', views.reset_password, name='reset_password'),
 ]
