@@ -76,6 +76,9 @@ def process_booking(request):
                 status='pending'
             )
 
+            # Store booking ID in session
+            request.session['booking_id'] = booking.id
+
             # Handle different payment methods
             if payment_method == 'cash':
                 # Create payment record for cash
@@ -372,7 +375,7 @@ def edit_profile(request):
 @login_required
 def add_testimonial(request, booking_id):
     # Get the booking or return 404 if not found
-    booking = get_object_or_404(Booking, id=booking_id, customer=request.user)
+    booking = get_object_or_404(Booking, id=booking_id)
     
     # Check if testimonial already exists for this booking
     existing_testimonial = Testimonial.objects.filter(booking=booking).first()
@@ -392,7 +395,7 @@ def add_testimonial(request, booking_id):
                         booking=booking,
                         message=message,
                         rating=rating,
-                        is_displayed=False  # Requires admin approval
+                        is_displayed=True  # Requires admin approval
                     )
                     messages.success(request, 'Thank you for your review! It will be displayed after approval.')
                     return redirect('booking_confirmation')
@@ -407,15 +410,18 @@ def add_testimonial(request, booking_id):
 
 def booking_confirmation(request):
     booking_id = request.session.get('booking_id')
-    booking = None
-    
-    if booking_id:
-        booking = get_object_or_404(Booking, id=booking_id)
-        # Check if user has already submitted a testimonial
-        testimonial = Testimonial.objects.filter(booking=booking).first()
-        booking.has_testimonial = testimonial is not None
+    if not booking_id:
+        return redirect('booking')
         
-    return render(request, 'booking_confirmation.html', {'booking': booking})
+    booking = get_object_or_404(Booking, id=booking_id)
+    has_testimonial = Testimonial.objects.filter(booking=booking).exists()
+    
+    context = {
+        'booking': booking,
+        'has_testimonial': has_testimonial
+    }
+    
+    return render(request, 'booking_confirmation.html', context)
 
 def services(request):
     active_services = Service.objects.filter(is_active=True).order_by('name')
@@ -519,4 +525,3 @@ def payment_callback(request):
         'status': 'error',
         'message': 'Invalid request method'
     })
-

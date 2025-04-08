@@ -99,20 +99,6 @@ class Gallery(models.Model):
     def __str__(self):
         return self.title
 
-
-class Testimonial(models.Model):
-    booking = models.ForeignKey('Booking', on_delete=models.CASCADE, null=True, blank=True)
-    message = models.TextField()
-    rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
-    date_submitted = models.DateTimeField(auto_now_add=True)
-    is_displayed = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"Review by {self.booking.customer_name}"
-
-    class Meta:
-        ordering = ['-date_submitted']
-
 class ContactUs(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -127,7 +113,6 @@ class Package(models.Model):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     
-
     def __str__(self):
         return self.name
 
@@ -193,3 +178,19 @@ class Payment(models.Model):
         if not self.amount:
             self.amount = self.booking.total_amount
         super().save(*args, **kwargs)
+
+class Testimonial(models.Model):
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, null=False, blank=False)
+    message = models.TextField()
+    rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
+    date_submitted = models.DateTimeField(auto_now_add=True)
+    is_displayed = models.BooleanField(default=False)
+
+    def __str__(self):
+        if self.booking:
+            return f"Testimonial by {self.booking.customer_name}"
+        return "Testimonial (No Booking Linked)"
+
+
+    class Meta:
+        ordering = ['-date_submitted']
