@@ -98,14 +98,14 @@ def process_booking(request):
                     'amount': amount_in_paise,
                     'currency': order_currency,
                     'receipt': order_receipt,
-                    'payment_capture': '1'
+                    'payment_capture': 1
                 })
 
                 # Create payment record
                 payment = Payment.objects.create(
                     booking=booking,
                     amount=package.price,
-                    payment_method=payment_method,
+                    payment_method='online',
                     payment_status='pending',
                     razorpay_order_id=razorpay_order['id']
                 )
@@ -116,17 +116,74 @@ def process_booking(request):
                     'order_id': razorpay_order['id'],
                     'amount': amount_in_paise,
                     'currency': order_currency,
-                    'razorpay_key': "rzp_test_0Att5ZPFjE4MYb",
+                    'razorpay_key': settings.RAZORPAY_KEY_ID,
                     'customer_name': booking.customer_name,
                     'customer_email': booking.customer_email,
                     'customer_phone': booking.customer_phone
                 })
 
-        except CustomUser.DoesNotExist:
+        except Exception as e:
             return JsonResponse({
                 'status': 'error',
-                'message': 'User profile not found. Please contact support.'
+                'message': str(e)
             })
+
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    })
+
+@csrf_exempt
+def payment_callback(request):
+    if request.method == "POST":
+        try:
+            # Get payment verification data
+            data = json.loads(request.body)
+            razorpay_payment_id = data.get('razorpay_payment_id')
+            razorpay_order_id = data.get('razorpay_order_id')
+            razorpay_signature = data.get('razorpay_signature')
+
+            # Verify payment signature
+            params_dict = {
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_signature': razorpay_signature
+            }
+
+            try:
+                razorpay_client.utility.verify_payment_signature(params_dict)
+
+                # Get payment and booking records
+                payment = Payment.objects.get(razorpay_order_id=razorpay_order_id)
+                booking = payment.booking
+
+                # Update payment status
+                payment.payment_status = 'completed'
+                payment.razorpay_payment_id = razorpay_payment_id
+                payment.razorpay_signature = razorpay_signature
+                payment.save()
+
+                # Update booking status
+                booking.status = 'confirmed'
+                booking.save()
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Payment successful',
+                    'redirect_url': '/booking-confirmation/'
+                })
+
+            except razorpay.errors.SignatureVerificationError:
+                # Payment verification failed
+                payment = Payment.objects.get(razorpay_order_id=razorpay_order_id)
+                payment.payment_status = 'failed'
+                payment.save()
+
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Payment verification failed'
+                })
+
         except Exception as e:
             return JsonResponse({
                 'status': 'error',
@@ -473,55 +530,3 @@ def booking(request):
         'packages': packages
     }
     return render(request, 'booking.html', context)
-
-@csrf_exempt
-def payment_callback(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            payment_id = data.get('razorpay_payment_id')
-            order_id = data.get('razorpay_order_id')
-            signature = data.get('razorpay_signature')
-            
-            params_dict = {
-                'razorpay_payment_id': payment_id,
-                'razorpay_order_id': order_id,
-                'razorpay_signature': signature
-            }
-            
-            try:
-                # Verify payment signature
-                razorpay_client.utility.verify_payment_signature(params_dict)
-                
-                # Update payment status
-                payment = Payment.objects.get(razorpay_order_id=order_id)
-                payment.payment_status = 'completed'
-                payment.razorpay_payment_id = payment_id
-                payment.razorpay_signature = signature
-                payment.save()
-                
-                # Update booking status
-                booking = payment.booking
-                booking.status = 'confirmed'
-                booking.save()
-                
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Payment successful'
-                })
-            except razorpay.errors.SignatureVerificationError:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Invalid payment signature'
-                })
-                
-        except Exception as e:
-            return JsonResponse({
-                'status': 'error',
-                'message': str(e)
-            })
-            
-    return JsonResponse({
-        'status': 'error',
-        'message': 'Invalid request method'
-    })
