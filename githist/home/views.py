@@ -36,8 +36,9 @@ import json
 import hmac
 import hashlib
 
+# Initialize Razorpay client
 razorpay_client = razorpay.Client(
-    auth=("rzp_test_0Att5ZPFjE4MYb", "xjZxCblnH9Fxy8Ngn4qppuKu")
+    auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
 )
 
 
@@ -194,6 +195,7 @@ def payment_callback(request):
         'status': 'error',
         'message': 'Invalid request method'
     })
+
 
 def generate_otp():
     return str(random.randint(100000, 999999))

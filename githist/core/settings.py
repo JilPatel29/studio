@@ -150,5 +150,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'jilpatel2952005@gmail.com'  # Replace with your Gmail address
 EMAIL_HOST_PASSWORD = 'xcss yyfp enjh pgsh'  # Replace with your Gmail app password
 
-RAZORPAY_KEY_ID = 'rzp_test_0Att5ZPFjE4MYb'
-RAZORPAY_KEY_SECRET = 'xjZxCblnH9Fxy8Ngn4qppuKu'
+RAZORPAY_KEY_ID = 'rzp_test_Afu78sC9QtwWVg'
+RAZORPAY_KEY_SECRET = 'yuWqwWBZXCPa4RCqkyKpeN9v'

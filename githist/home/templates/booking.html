@@ -222,21 +222,13 @@
 
                                         const verificationData = await verificationResponse.json();
                                         if (verificationData.status === 'success') {
-                                            window.location.href = verificationData.redirect_url;
+                                            window.location.href = '/booking-confirmation/';
                                         } else {
-                                            alert('Payment failed: ' + verificationData.message);
-                                            window.location.href = '/booking/';
+                                            alert('Payment verification failed. Please contact support.');
                                         }
                                     } catch (error) {
                                         console.error('Error:', error);
-                                        alert('An error occurred during payment verification. Please try again.');
-                                        window.location.href = '/booking/';
-                                    }
-                                },
-                                modal: {
-                                    ondismiss: function() {
-                                        alert('Payment cancelled. Please try again.');
-                                        window.location.href = '/booking/';
+                                        alert('An error occurred during payment verification.');
                                     }
                                 }
                             };
