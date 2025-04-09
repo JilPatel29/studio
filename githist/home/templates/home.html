@@ -206,7 +206,7 @@
                     <img src="{{ service.image.url }}" alt="{{ service.name }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
                 {% endif %}
                 <h3>{{ service.name }}</h3>
-                <p>{{ service.description|safe }}</p>
+                <p>{{ service.description|linebreaks }}</p>
             </div>
             {% endfor %}
         </div>
@@ -242,8 +242,8 @@
                     {% endfor %}
                 </div>
                 <p class="message">{{ testimonial.message }}</p>
-                <p class="customer-name">- {{ testimonial.customer_name }}</p>
-                <p class="date">{{ testimonial.date_submitted|date:"F d, Y" }}</p>
+                <p class="customer-name" style="font-weight: bold; color: #ff6f91; margin-top: 10px;">- {{ testimonial.booking.customer_name }}</p>
+                <p class="date" style="color: #666; font-size: 0.9em;">{{ testimonial.date_submitted|date:"F d, Y" }}</p>
             </div>
             {% endfor %}
         </div>

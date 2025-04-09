@@ -86,8 +86,6 @@ class Gallery(models.Model):
         ('maternity', 'Maternity')
     ]
 
-    title = models.CharField(max_length=200, default='Untitled')
-    description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='gallery/', blank=True, null=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='wedding')
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -97,7 +95,8 @@ class Gallery(models.Model):
         ordering = ['-uploaded_at']
 
     def __str__(self):
-        return self.title
+        return f"{self.category.capitalize()} - {self.uploaded_at.strftime('%Y-%m-%d')}"
+
 
 class ContactUs(models.Model):
     name = models.CharField(max_length=100)

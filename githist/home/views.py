@@ -40,6 +40,7 @@ razorpay_client = razorpay.Client(
     auth=("rzp_test_0Att5ZPFjE4MYb", "xjZxCblnH9Fxy8Ngn4qppuKu")
 )
 
+
 @login_required
 def process_booking(request):
     if request.method == "POST":
@@ -55,13 +56,7 @@ def process_booking(request):
             package = Package.objects.get(id=package_id)
             
             # Get or create CustomUser instance
-            custom_user, created = CustomUser.objects.get_or_create(
-                email=request.user.email,
-                defaults={
-                    'username': request.user.username,
-                    'email': request.user.email,
-                }
-            )
+            custom_user = CustomUser.objects.get(email=request.user.email)
             
             # Create booking
             booking = Booking.objects.create(
@@ -127,6 +122,11 @@ def process_booking(request):
                     'customer_phone': booking.customer_phone
                 })
 
+        except CustomUser.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'User profile not found. Please contact support.'
+            })
         except Exception as e:
             return JsonResponse({
                 'status': 'error',
@@ -395,7 +395,7 @@ def add_testimonial(request, booking_id):
                         booking=booking,
                         message=message,
                         rating=rating,
-                        is_displayed=True  # Requires admin approval
+                        is_displayed=True  # Requires admin approval if false
                     )
                     messages.success(request, 'Thank you for your review! It will be displayed after approval.')
                     return redirect('booking_confirmation')
