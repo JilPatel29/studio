@@ -36,11 +36,11 @@ import json
 import hmac
 import hashlib
 
-# Initialize Razorpay client
+
+                        
 razorpay_client = razorpay.Client(
     auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
 )
-
 
 @login_required
 def process_booking(request):
@@ -57,7 +57,7 @@ def process_booking(request):
             package = Package.objects.get(id=package_id)
             
             # Get or create CustomUser instance
-            custom_user = CustomUser.objects.get(email=request.user.email)
+            custom_user = CustomUser.objects.get(email=request.user.email)   
             
             # Create booking
             booking = Booking.objects.create(

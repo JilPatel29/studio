@@ -1,5 +1,7 @@
 from django.urls import path
 from home import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -22,4 +24,4 @@ urlpatterns = [
     path('add-testimonial/<int:booking_id>/', views.add_testimonial, name='add_testimonial'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-password/<str:email>/', views.reset_password, name='reset_password'),
-]
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

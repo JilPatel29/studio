@@ -230,6 +230,11 @@
                                         console.error('Error:', error);
                                         alert('An error occurred during payment verification.');
                                     }
+                                },
+                                modal: {
+                                    ondismiss: function() {
+                                        alert('Payment cancelled. Please try again.');
+                                    }
                                 }
                             };
 
